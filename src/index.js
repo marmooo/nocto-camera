@@ -477,7 +477,7 @@ class ThumbnailPanel extends Panel {
   }
 }
 
-class FilterPanel extends Panel {
+class FilterPanel extends LoadPanel {
   constructor(panel) {
     super(panel);
     this.panelContainer = panel.querySelector(".panelContainer");
