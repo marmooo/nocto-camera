@@ -412,23 +412,6 @@ class CameraPanel extends Panel {
     this.animationFrame = requestAnimationFrame(this.tickVideo);
   }
 
-  // drawCanvasRect() {
-  //   const src = cv.imread(this.canvas);
-  //   const rect = this.findRect(src, this.canvas);
-  //   // const color = new cv.Scalar(255, 255, 255, 255); // RGBA
-  //   const color = new cv.Scalar(
-  //     Math.round(Math.random() * 255),
-  //     Math.round(Math.random() * 255),
-  //     Math.round(Math.random() * 255),
-  //     255,
-  //   );
-  //   for (let i = 0; i < 4; i++) {
-  //     cv.line(src, rect[i], rect[(i + 1) % 4], color, 1, cv.LINE_AA);
-  //   }
-  //   cv.imshow(this.canvas, src);
-  //   src.delete();
-  // }
-
   tickVideo = () => {
     const fps = 30;
     const t = Date.now();
@@ -449,77 +432,6 @@ class CameraPanel extends Panel {
     if (!this.stream) return;
     new Audio("/nocto-camera/camera.mp3").play();
     thumbnailPanel.add(this.canvas);
-  }
-
-  fixRect(rect, canvas) {
-    const actualRect = this.getActualRect(canvas);
-    const w = actualRect.width;
-    const h = actualRect.height;
-    rect.forEach((vertice) => {
-      if (vertice.x < 0) vertice.x = 0;
-      if (w < vertice.x) vertice.x = w;
-      if (vertice.y < 0) vertice.y = 0;
-      if (h < vertice.y) vertice.y = h;
-    });
-    return rect;
-  }
-
-  findRect(src, canvas) {
-    const dst = new cv.Mat();
-    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-    // blockSize = 5% width
-    // Small areas are not important, however 10% is too strong.
-    const blockSize = Math.round(dst.rows / 40) * 2 + 1;
-    cv.adaptiveThreshold(
-      dst,
-      dst,
-      255,
-      cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-      cv.THRESH_BINARY,
-      blockSize,
-      5,
-    );
-    // Large areas cannot be acquired without weak denoising.
-    // However, strong denoising causes the area to become excessively large.
-    cv.medianBlur(dst, dst, 9);
-
-    const contours = new cv.MatVector();
-    const hierarchy = new cv.Mat();
-    cv.findContours(
-      dst,
-      contours,
-      hierarchy,
-      cv.RETR_LIST,
-      cv.CHAIN_APPROX_TC89_L1,
-    );
-    dst.delete();
-
-    let firstPos = 0;
-    let secondPos = 0;
-    let firstSize = 0;
-    let secondSize;
-    for (let i = 0; i < contours.size(); i++) {
-      const cnt = contours.get(i);
-      const size = cv.contourArea(cnt, false);
-      if (firstSize < size) {
-        secondSize = size;
-        secondPos = firstPos;
-        firstSize = size;
-        firstPos = i;
-      } else if (secondSize < size && size < firstSize) {
-        secondSize = size;
-        secondPos = i;
-      }
-      cnt.delete();
-    }
-    const cnt = contours.get(secondPos);
-    const rect = cv.minAreaRect(cnt);
-    const vertices = cv.RotatedRect.points(rect);
-
-    contours.delete();
-    hierarchy.delete();
-    cnt.delete();
-    return this.fixRect(vertices, canvas);
   }
 }
 
