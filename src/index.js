@@ -76,9 +76,10 @@ class ImageBox extends HTMLElement {
     const template = document.getElementById("img-box")
       .content.cloneNode(true);
     template.querySelector("img").onclick = (event) => {
+      loadPanel.hide();
+      cameraPanel.hide();
       filterPanel.setCanvas(event.target);
       filterPanel.show();
-      cameraPanel.hide();
     };
     template.querySelector(".delete").onclick = () => this.remove();
     this.attachShadow({ mode: "open" }).appendChild(template);
@@ -477,7 +478,7 @@ class ThumbnailPanel extends Panel {
   }
 }
 
-class FilterPanel extends LoadPanel {
+class FilterPanel extends Panel {
   constructor(panel) {
     super(panel);
     this.panelContainer = panel.querySelector(".panelContainer");
