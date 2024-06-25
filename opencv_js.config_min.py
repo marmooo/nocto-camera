@@ -54,7 +54,7 @@ imgproc = {
         # 'drawContours',
         # 'ellipse',
         # 'ellipse2Poly',
-        # 'equalizeHist',
+        'equalizeHist',
         # 'erode',
         # 'filter2D',
         # 'findContours',

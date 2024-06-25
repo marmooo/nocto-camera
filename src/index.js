@@ -260,6 +260,7 @@ class CameraPanel extends Panel {
     this.offscreenCanvasContext = this.offscreenCanvas.getContext("2d", {
       willReadFrequently: true,
     });
+    this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
     this.clipLimitRange = panel.querySelector(".clipLimitRange");
     this.tileGridSizeRange = panel.querySelector(".tileGridSizeRange");
 
@@ -287,7 +288,8 @@ class CameraPanel extends Panel {
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
-    if (tileGridSize === 0) {
+    const equalizedHist = Number(this.equalizedHistSwitch.checked);
+    if (!equalizedHist && tileGridSize === 0) {
       this.canvasContext.drawImage(this.offscreenCanvas, 0, 0);
       return;
     }
@@ -298,7 +300,8 @@ class CameraPanel extends Panel {
     const labPlanes = new cv.MatVector();
     cv.split(src, labPlanes);
     const mat = labPlanes.get(0);
-    clahe.apply(mat, mat);
+    if (equalizedHist) cv.equalizeHist(mat, mat);
+    if (tileGridSize !== 0) clahe.apply(mat, mat);
     cv.merge(labPlanes, src);
     cv.cvtColor(src, src, cv.COLOR_Lab2BGR, 0);
     cv.imshow(this.canvas, src);
@@ -534,7 +537,8 @@ class FilterPanel extends Panel {
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
-    if (tileGridSize === 0) {
+    const equalizedHist = Number(this.equalizedHistSwitch.checked);
+    if (!equalizedHist && tileGridSize === 0) {
       this.canvasContext.drawImage(this.offscreenCanvas, 0, 0);
       return;
     }
@@ -547,7 +551,8 @@ class FilterPanel extends Panel {
     const labPlanes = new cv.MatVector();
     cv.split(src, labPlanes);
     const mat = labPlanes.get(0);
-    clahe.apply(mat, mat);
+    if (equalizedHist) cv.equalizeHist(mat, mat);
+    if (tileGridSize !== 0) clahe.apply(mat, mat);
     cv.merge(labPlanes, src);
     cv.cvtColor(src, src, cv.COLOR_Lab2BGR, 0);
     cv.imshow(this.offscreenCanvas, src);
@@ -578,6 +583,7 @@ class FilterPanel extends Panel {
 
   addGlfxEvents(panel) {
     this.filtering = false;
+    this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
     this.clipLimitRange = panel.querySelector(".clipLimitRange");
     this.tileGridSizeRange = panel.querySelector(".tileGridSizeRange");
     this.binarizationBlocksizeRange = panel.querySelector(
@@ -598,10 +604,11 @@ class FilterPanel extends Panel {
     );
     this.sepiaRange = panel.querySelector(".sepiaRange");
 
+    this.equalizedHistSwitch.onchange = () => this.clahe();
     this.clipLimitRange.oninput = () => this.clahe();
-    this.clipLimitRange.oninput = () => this.clahe();
+    this.clipLimitRange.onchange = () => this.clahe();
     this.tileGridSizeRange.oninput = () => this.clahe();
-    this.tileGridSizeRange.oninput = () => this.clahe();
+    this.tileGridSizeRange.onchange = () => this.clahe();
     this.binarizationBlocksizeRange.oninput = () => this.binarization();
     this.binarizationBlocksizeRange.onchange = () => this.binarization();
     this.binarizationCRange.oninput = () => this.binarization();
