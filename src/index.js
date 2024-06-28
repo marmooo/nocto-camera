@@ -266,6 +266,9 @@ class CameraPanel extends Panel {
     this.gammaRange = panel.querySelector(".gammaRange");
     this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
 
+    this.gammaRange.oninput = () => this.setLUT();
+    this.gammaRange.onchange = () => this.setLUT();
+
     panel.querySelector(".clipLimitReset").onclick = () => {
       this.clipLimitRange.value = this.clipLimitRange.dataset.value;
     };
@@ -290,6 +293,16 @@ class CameraPanel extends Panel {
     );
   }
 
+  setLUT() {
+    const gamma = Number(this.gammaRange.value);
+    const gammaValue = 2 ** gamma;
+    const gammaArray = new Array(256);
+    for (let i = 0; i < gammaArray.length; i++) {
+      gammaArray[i] = (i / 255) ** gammaValue * 255;
+    }
+    this.lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
+  }
+
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
@@ -300,15 +313,7 @@ class CameraPanel extends Panel {
       return;
     }
     const src = cv.imread(this.offscreenCanvas);
-
-    const gammaValue = 2 ** gamma;
-    const gammaArray = new Array(256);
-    for (let i = 0; i < gammaArray.length; i++) {
-      gammaArray[i] = (i / 255) ** gammaValue * 255;
-    }
-    const lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
-    cv.LUT(src, lut, src);
-    lut.delete();
+    if (gamma !== 0) cv.LUT(src, this.lut, src);
 
     cv.cvtColor(src, src, cv.COLOR_BGR2Lab, 0);
     const size = new cv.Size(tileGridSize, tileGridSize);
@@ -550,6 +555,16 @@ class FilterPanel extends Panel {
     this.selectedIndex = selectedIndex;
   }
 
+  setLUT() {
+    const gamma = Number(this.gammaRange.value);
+    const gammaValue = 2 ** gamma;
+    const gammaArray = new Array(256);
+    for (let i = 0; i < gammaArray.length; i++) {
+      gammaArray[i] = (i / 255) ** gammaValue * 255;
+    }
+    this.lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
+  }
+
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
@@ -562,15 +577,7 @@ class FilterPanel extends Panel {
     const { width, height } = this.glfxCanvas;
     this.drawOffscreenCanvas(this.canvas, width, height);
     const src = cv.imread(this.offscreenCanvas);
-
-    const gammaValue = 2 ** gamma;
-    const gammaArray = new Array(256);
-    for (let i = 0; i < gammaArray.length; i++) {
-      gammaArray[i] = (i / 255) ** gammaValue * 255;
-    }
-    const lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
-    cv.LUT(src, lut, src);
-    lut.delete();
+    if (gamma !== 0) cv.LUT(src, this.lut, src);
 
     cv.cvtColor(src, src, cv.COLOR_BGR2Lab, 0);
     const size = new cv.Size(tileGridSize, tileGridSize);
@@ -636,8 +643,14 @@ class FilterPanel extends Panel {
     this.clipLimitRange.onchange = () => this.clahe();
     this.tileGridSizeRange.oninput = () => this.clahe();
     this.tileGridSizeRange.onchange = () => this.clahe();
-    this.gammaRange.oninput = () => this.clahe();
-    this.gammaRange.onchange = () => this.clahe();
+    this.gammaRange.oninput = () => {
+      this.setLUT();
+      this.clahe();
+    };
+    this.gammaRange.onchange = () => {
+      this.setLUT();
+      this.clahe();
+    }
     this.equalizedHistSwitch.onchange = () => this.clahe();
     this.binarizationBlocksizeRange.oninput = () => this.binarization();
     this.binarizationBlocksizeRange.onchange = () => this.binarization();
