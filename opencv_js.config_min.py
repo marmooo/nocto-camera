@@ -13,7 +13,7 @@
 #     ],
 #     'Algorithm': [],
 # }
-core = {'': ['merge', 'split'],
+core = {'': ['merge', 'split', 'LUT'],
       'Algorithm': []}
 
 imgproc = {

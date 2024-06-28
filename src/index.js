@@ -45,18 +45,19 @@ function initTooltip() {
 }
 
 async function getOpenCVPath() {
-  const simdSupport = await wasmFeatureDetect.simd();
-  const threadsSupport = self.crossOriginIsolated &&
-    await wasmFeatureDetect.threads();
-  if (simdSupport && threadsSupport) {
-    return "/nocto-camera/opencv/threaded-simd/opencv_js.js";
-  } else if (simdSupport) {
-    return "/nocto-camera/opencv/simd/opencv_js.js";
-  } else if (threadsSupport) {
-    return "/nocto-camera/opencv/threads/opencv_js.js";
-  } else {
-    return "/nocto-camera/opencv/wasm/opencv_js.js";
-  }
+  // const simdSupport = await wasmFeatureDetect.simd();
+  // const threadsSupport = self.crossOriginIsolated &&
+  //   await wasmFeatureDetect.threads();
+  // if (simdSupport && threadsSupport) {
+  //   return "/nocto-camera/opencv/threaded-simd/opencv_js.js";
+  // } else if (simdSupport) {
+  //   return "/nocto-camera/opencv/simd/opencv_js.js";
+  // } else if (threadsSupport) {
+  //   return "/nocto-camera/opencv/threads/opencv_js.js";
+  // } else {
+  //   return "/nocto-camera/opencv/wasm/opencv_js.js";
+  // }
+  return "/nocto-camera/opencv/wasm/opencv_js.js";
 }
 
 function loadScript(url) {
@@ -260,15 +261,19 @@ class CameraPanel extends Panel {
     this.offscreenCanvasContext = this.offscreenCanvas.getContext("2d", {
       willReadFrequently: true,
     });
-    this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
     this.clipLimitRange = panel.querySelector(".clipLimitRange");
     this.tileGridSizeRange = panel.querySelector(".tileGridSizeRange");
+    this.gammaRange = panel.querySelector(".gammaRange");
+    this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
 
     panel.querySelector(".clipLimitReset").onclick = () => {
       this.clipLimitRange.value = this.clipLimitRange.dataset.value;
     };
     panel.querySelector(".tileGridSizeReset").onclick = () => {
       this.tileGridSizeRange.value = this.tileGridSizeRange.dataset.value;
+    };
+    panel.querySelector(".gammaReset").onclick = () => {
+      this.gammaRange.value = this.gammaRange.dataset.value;
     };
   }
 
@@ -288,12 +293,23 @@ class CameraPanel extends Panel {
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
+    const gamma = Number(this.gammaRange.value);
     const equalizedHist = Number(this.equalizedHistSwitch.checked);
-    if (!equalizedHist && tileGridSize === 0) {
+    if (!equalizedHist && tileGridSize === 0 && gamma === 0) {
       this.canvasContext.drawImage(this.offscreenCanvas, 0, 0);
       return;
     }
     const src = cv.imread(this.offscreenCanvas);
+
+    const gammaValue = 2 ** gamma;
+    const gammaArray = new Array(256);
+    for (let i = 0; i < gammaArray.length; i++) {
+      gammaArray[i] = (i / 255) ** gammaValue * 255;
+    }
+    const lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
+    cv.LUT(src, lut, src);
+    lut.delete();
+
     cv.cvtColor(src, src, cv.COLOR_BGR2Lab, 0);
     const size = new cv.Size(tileGridSize, tileGridSize);
     const clahe = new cv.CLAHE(clipLimit, size);
@@ -537,14 +553,25 @@ class FilterPanel extends Panel {
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
+    const gamma = Number(this.gammaRange.value);
     const equalizedHist = Number(this.equalizedHistSwitch.checked);
-    if (!equalizedHist && tileGridSize === 0) {
+    if (!equalizedHist && tileGridSize === 0 && gamma === 0) {
       this.canvasContext.drawImage(this.offscreenCanvas, 0, 0);
       return;
     }
     const { width, height } = this.glfxCanvas;
     this.drawOffscreenCanvas(this.canvas, width, height);
     const src = cv.imread(this.offscreenCanvas);
+
+    const gammaValue = 2 ** gamma;
+    const gammaArray = new Array(256);
+    for (let i = 0; i < gammaArray.length; i++) {
+      gammaArray[i] = (i / 255) ** gammaValue * 255;
+    }
+    const lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
+    cv.LUT(src, lut, src);
+    lut.delete();
+
     cv.cvtColor(src, src, cv.COLOR_BGR2Lab, 0);
     const size = new cv.Size(tileGridSize, tileGridSize);
     const clahe = new cv.CLAHE(clipLimit, size);
@@ -583,9 +610,10 @@ class FilterPanel extends Panel {
 
   addGlfxEvents(panel) {
     this.filtering = false;
-    this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
     this.clipLimitRange = panel.querySelector(".clipLimitRange");
     this.tileGridSizeRange = panel.querySelector(".tileGridSizeRange");
+    this.gammaRange = panel.querySelector(".gammaRange");
+    this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
     this.binarizationBlocksizeRange = panel.querySelector(
       ".binarizationBlocksizeRange",
     );
@@ -604,11 +632,13 @@ class FilterPanel extends Panel {
     );
     this.sepiaRange = panel.querySelector(".sepiaRange");
 
-    this.equalizedHistSwitch.onchange = () => this.clahe();
     this.clipLimitRange.oninput = () => this.clahe();
     this.clipLimitRange.onchange = () => this.clahe();
     this.tileGridSizeRange.oninput = () => this.clahe();
     this.tileGridSizeRange.onchange = () => this.clahe();
+    this.gammaRange.oninput = () => this.clahe();
+    this.gammaRange.onchange = () => this.clahe();
+    this.equalizedHistSwitch.onchange = () => this.clahe();
     this.binarizationBlocksizeRange.oninput = () => this.binarization();
     this.binarizationBlocksizeRange.onchange = () => this.binarization();
     this.binarizationCRange.oninput = () => this.binarization();
@@ -638,6 +668,10 @@ class FilterPanel extends Panel {
     };
     panel.querySelector(".tileGridSizeReset").onclick = () => {
       this.tileGridSizeRange.value = this.tileGridSizeRange.dataset.value;
+      this.clahe();
+    };
+    panel.querySelector(".gammaReset").onclick = () => {
+      this.gammaRange.value = this.gammaRange.dataset.value;
       this.clahe();
     };
     panel.querySelector(".binarizationCReset").onclick = () => {
