@@ -650,7 +650,7 @@ class FilterPanel extends Panel {
     this.gammaRange.onchange = () => {
       this.setLUT();
       this.clahe();
-    }
+    };
     this.equalizedHistSwitch.onchange = () => this.clahe();
     this.binarizationBlocksizeRange.oninput = () => this.binarization();
     this.binarizationBlocksizeRange.onchange = () => this.binarization();
@@ -858,7 +858,7 @@ class FilterPanel extends Panel {
       this.canvas.width = canvas.width;
       this.canvas.height = canvas.height;
     }
-    this.canvas.getContext("2d").drawImage(canvas, 0, 0);
+    this.canvasContext.drawImage(canvas, 0, 0);
 
     this.texture = this.glfxCanvas.texture(this.canvas);
     this.glfxCanvas.draw(this.texture).update();
@@ -871,6 +871,7 @@ class FilterPanel extends Panel {
   rotate() {
     const angle = 90;
     const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
     const glfxCanvas = this.glfxCanvas;
     const width = glfxCanvas.width;
     const height = glfxCanvas.height;
@@ -883,7 +884,6 @@ class FilterPanel extends Panel {
     const rotatedHeight = sinAngle * width + cosAngle * height;
     canvas.width = rotatedWidth;
     canvas.height = rotatedHeight;
-    const context = canvas.getContext("2d");
     context.translate(rotatedWidth / 2, rotatedHeight / 2);
     context.rotate(radian);
     this.glfxCanvas.update();
