@@ -165,6 +165,8 @@ class LoadPanel extends Panel {
   };
 
   loadImage(url) {
+    cameraPanel.stopCamera();
+    cameraPanel.hide();
     loadPanel.hide();
     filterPanel.show();
     const img = new Image();
