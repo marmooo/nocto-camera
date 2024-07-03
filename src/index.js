@@ -983,6 +983,12 @@ globalThis.addEventListener("paste", (event) => {
   if (!file) return;
   loadPanel.loadFile(file);
 });
+globalThis.addEventListener("paste", (event) => {
+  const item = event.clipboardData.items[0];
+  const file = item.getAsFile();
+  if (!file) return;
+  loadPanel.loadFile(file);
+});
 
 await loadScript(await getOpenCVPath());
 cv = await cv();
