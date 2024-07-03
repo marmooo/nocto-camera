@@ -174,13 +174,18 @@ class LoadPanel extends Panel {
 
   loadInputImage(event) {
     const file = event.currentTarget.files[0];
+    this.loadFile(file);
+    event.currentTarget.value = "";
+  }
+
+  loadFile(file) {
+    if (!file.type.startsWith("image/")) return;
     if (file.type === "image/svg+xml") {
       alert("SVG is not supported.");
       return;
     }
     const url = URL.createObjectURL(file);
     this.loadImage(url);
-    event.currentTarget.value = "";
   }
 
   async loadClipboardImage() {
@@ -964,6 +969,20 @@ loadConfig();
 initLangSelect();
 initTooltip();
 document.getElementById("toggleDarkMode").onclick = toggleDarkMode;
+globalThis.ondragover = (event) => {
+  event.preventDefault();
+};
+globalThis.ondrop = (event) => {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  loadPanel.loadFile(file);
+};
+globalThis.addEventListener("paste", (event) => {
+  const item = event.clipboardData.items[0];
+  const file = item.getAsFile();
+  if (!file) return;
+  loadPanel.loadFile(file);
+});
 
 await loadScript(await getOpenCVPath());
 cv = await cv();
