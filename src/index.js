@@ -638,9 +638,7 @@ class FilterPanel extends Panel {
     const angle = 90;
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    const glfxCanvas = this.glfxCanvas;
-    const width = glfxCanvas.width;
-    const height = glfxCanvas.height;
+    const { width, height } = this.canvas;
     const radian = angle * Math.PI / 180;
     // const cosAngle = Math.abs(Math.cos(radian));
     // const sinAngle = Math.abs(Math.sin(radian));
@@ -652,10 +650,10 @@ class FilterPanel extends Panel {
     canvas.height = rotatedHeight;
     context.translate(rotatedWidth / 2, rotatedHeight / 2);
     context.rotate(radian);
-    this.glfxCanvas.update();
-    context.drawImage(this.glfxCanvas, -width / 2, -height / 2);
-    this.texture = this.glfxCanvas.texture(canvas);
-    this.glfxCanvas.draw(this.texture).update();
+    context.drawImage(this.canvas, -width / 2, -height / 2);
+    this.canvas.width = rotatedWidth;
+    this.canvas.height = rotatedHeight;
+    this.canvasContext.drawImage(canvas, 0, 0);
   }
 
   saveToAlbum() {
