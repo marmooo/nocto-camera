@@ -4,6 +4,7 @@ import {
   Tooltip,
 } from "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/+esm";
 import glfx from "https://cdn.jsdelivr.net/npm/glfx@0.0.4/+esm";
+import imageCompareViewer from "https://cdn.jsdelivr.net/npm/image-compare-viewer@1.6.2/+esm";
 
 function loadConfig() {
   configPanel.serverAddress.value = localStorage.getItem("serverAddress");
@@ -131,9 +132,17 @@ class LoadPanel extends Panel {
   constructor(panel) {
     super(panel);
 
-    panel.querySelector(".clipboard").onclick = (event) => {
-      this.loadClipboardImage(event);
-    };
+    for (const node of document.querySelectorAll(".image-compare")) {
+      const images = node.querySelectorAll("img");
+      new imageCompareViewer(node, { addCircle: true }).mount();
+      images[1].classList.remove("d-none");
+    }
+    const clipboardButton = panel.querySelector(".clipboard");
+    if (clipboardButton) {
+      clipboardButton.onclick = (event) => {
+        this.loadClipboardImage(event);
+      };
+    }
     panel.querySelector(".selectImage").onclick = () => {
       panel.querySelector(".inputImage").click();
     };
@@ -141,11 +150,15 @@ class LoadPanel extends Panel {
     panel.querySelector(".inputImage").onchange = (event) => {
       this.loadInputImage(event);
     };
-    document.body.onpaste = (event) => {
-      if (!this.panel.classList.contains("d-none")) {
-        this.loadClipboardImage(event);
+    const examples = panel.querySelector(".examples");
+    if (examples) {
+      for (const img of examples.querySelectorAll("img")) {
+        img.onclick = () => {
+          const url = img.src.replace("-64", "");
+          this.loadImage(url);
+        };
       }
-    };
+    }
   }
 
   show() {
@@ -979,12 +992,6 @@ globalThis.ondrop = (event) => {
   const file = event.dataTransfer.files[0];
   loadPanel.loadFile(file);
 };
-globalThis.addEventListener("paste", (event) => {
-  const item = event.clipboardData.items[0];
-  const file = item.getAsFile();
-  if (!file) return;
-  loadPanel.loadFile(file);
-});
 globalThis.addEventListener("paste", (event) => {
   const item = event.clipboardData.items[0];
   const file = item.getAsFile();
