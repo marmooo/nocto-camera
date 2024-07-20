@@ -3,7 +3,6 @@ import {
   Popover,
   Tooltip,
 } from "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/+esm";
-import glfx from "https://cdn.jsdelivr.net/npm/glfx@0.0.4/+esm";
 import imageCompareViewer from "https://cdn.jsdelivr.net/npm/image-compare-viewer@1.6.2/+esm";
 
 function loadConfig() {
@@ -300,19 +299,6 @@ class CameraPanel extends Panel {
     };
   }
 
-  drawOffscreenCanvas(image, width, height) {
-    const canvas = this.offscreenCanvas;
-    canvas.width = width;
-    canvas.height = height;
-    this.offscreenCanvasContext.drawImage(
-      image,
-      0,
-      0,
-      width,
-      height,
-    );
-  }
-
   setLUT() {
     const gamma = Number(this.gammaRange.value);
     const gammaValue = 2 ** gamma;
@@ -526,8 +512,6 @@ class FilterPanel extends Panel {
   constructor(panel) {
     super(panel);
     this.panelContainer = panel.querySelector(".panelContainer");
-    this.selectedIndex = 0;
-    this.glfxCanvas = glfx.canvas();
     this.canvas = panel.querySelector("canvas");
     this.canvasContext = this.canvas.getContext("2d", {
       willReadFrequently: true,
@@ -540,12 +524,9 @@ class FilterPanel extends Panel {
 
     panel.querySelector(".moveTop").onclick = () => this.moveLoadPanel();
     panel.querySelector(".executeCamera").onclick = () => this.executeCamera();
-    panel.querySelector(".filterSelect").onchange = (event) =>
-      this.filterSelect(event);
     panel.querySelector(".rotate").onclick = () => this.rotate();
     panel.querySelector(".saveToAlbum").onclick = () => this.saveToAlbum();
-    this.addGlfxEvents(panel);
-    this.addAspectRatioEvents(panel);
+    this.addEvents(panel);
   }
 
   show() {
@@ -562,17 +543,6 @@ class FilterPanel extends Panel {
     this.hide();
     cameraPanel.show();
     cameraPanel.executeVideo();
-  }
-
-  filterSelect(event) {
-    this.texture.loadContentsOf(this.glfxCanvas.update());
-    const options = event.target.options;
-    const selectedIndex = options.selectedIndex;
-    const prevClass = options[this.selectedIndex].value;
-    const currClass = options[selectedIndex].value;
-    this.panel.querySelector(`.${prevClass}`).classList.add("d-none");
-    this.panel.querySelector(`.${currClass}`).classList.remove("d-none");
-    this.selectedIndex = selectedIndex;
   }
 
   setLUT() {
@@ -594,8 +564,6 @@ class FilterPanel extends Panel {
       this.canvasContext.drawImage(this.offscreenCanvas, 0, 0);
       return;
     }
-    const { width, height } = this.glfxCanvas;
-    this.drawOffscreenCanvas(this.canvas, width, height);
     const src = cv.imread(this.offscreenCanvas);
     if (gamma !== 0) cv.LUT(src, this.lut, src);
 
@@ -609,56 +577,19 @@ class FilterPanel extends Panel {
     if (tileGridSize !== 0) clahe.apply(mat, mat);
     cv.merge(labPlanes, src);
     cv.cvtColor(src, src, cv.COLOR_Lab2BGR, 0);
-    cv.imshow(this.offscreenCanvas, src);
+    cv.imshow(this.canvas, src);
     src.delete();
     labPlanes.delete();
     mat.delete();
     clahe.delete();
-    const texture = this.glfxCanvas.texture(this.offscreenCanvas);
-    this.glfxCanvas.draw(texture).update();
   }
 
-  addAspectRatioEvents(panel) {
-    const radioInputs = panel.querySelectorAll("input[type=radio]");
-    const manualRadioInput = radioInputs[radioInputs.length - 1];
-    radioInputs.forEach((input) => {
-      input.onclick = () => {
-        if (input.checked == "true") return;
-        input.checked = true;
-        this.setAspectRatio(Number(input.value));
-      };
-    });
-    panel.querySelector(".aspectRatioValue").onchange = (event) => {
-      manualRadioInput.checked = true;
-      const value = Number(event.currentTarget.value);
-      if (value) this.setAspectRatio(value);
-    };
-  }
-
-  addGlfxEvents(panel) {
+  addEvents(panel) {
     this.filtering = false;
     this.clipLimitRange = panel.querySelector(".clipLimitRange");
     this.tileGridSizeRange = panel.querySelector(".tileGridSizeRange");
     this.gammaRange = panel.querySelector(".gammaRange");
     this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
-    this.binarizationBlocksizeRange = panel.querySelector(
-      ".binarizationBlocksizeRange",
-    );
-    this.binarizationCRange = panel.querySelector(".binarizationCRange");
-    this.brightnessRange = panel.querySelector(".brightnessRange");
-    this.contrastRange = panel.querySelector(".contrastRange");
-    this.hueRange = panel.querySelector(".hueRange");
-    this.saturationRange = panel.querySelector(".saturationRange");
-    this.vibranceRange = panel.querySelector(".vibranceRange");
-    this.denoiseRange = panel.querySelector(".denoiseRange");
-    this.unsharpMaskRadiusRange = panel.querySelector(
-      ".unsharpMaskRadiusRange",
-    );
-    this.unsharpMaskStrengthRange = panel.querySelector(
-      ".unsharpMaskStrengthRange",
-    );
-    this.sepiaRange = panel.querySelector(".sepiaRange");
-
     this.clipLimitRange.oninput = () => this.clahe();
     this.clipLimitRange.onchange = () => this.clahe();
     this.tileGridSizeRange.oninput = () => this.clahe();
@@ -672,28 +603,6 @@ class FilterPanel extends Panel {
       this.clahe();
     };
     this.equalizedHistSwitch.onchange = () => this.clahe();
-    this.binarizationBlocksizeRange.oninput = () => this.binarization();
-    this.binarizationBlocksizeRange.onchange = () => this.binarization();
-    this.binarizationCRange.oninput = () => this.binarization();
-    this.binarizationCRange.onchange = () => this.binarization();
-    this.brightnessRange.oninput = () => this.brightnessContrast();
-    this.brightnessRange.onchange = () => this.brightnessContrast();
-    this.contrastRange.oninput = () => this.brightnessContrast();
-    this.contrastRange.onchange = () => this.brightnessContrast();
-    this.hueRange.oninput = () => this.hueSaturation();
-    this.hueRange.onchange = () => this.hueSaturation();
-    this.saturationRange.oninput = () => this.hueSaturation();
-    this.saturationRange.onchange = () => this.hueSaturation();
-    this.vibranceRange.oninput = () => this.vibrance();
-    this.vibranceRange.onchange = () => this.vibrance();
-    this.denoiseRange.oninput = () => this.denoise();
-    this.denoiseRange.onchange = () => this.denoise();
-    this.unsharpMaskRadiusRange.oninput = () => this.unsharpMask();
-    this.unsharpMaskRadiusRange.onchange = () => this.unsharpMask();
-    this.unsharpMaskStrengthRange.oninput = () => this.unsharpMask();
-    this.unsharpMaskStrengthRange.onchange = () => this.unsharpMask();
-    this.sepiaRange.oninput = () => this.sepia();
-    this.sepiaRange.onchange = () => this.sepia();
 
     panel.querySelector(".clipLimitReset").onclick = () => {
       this.clipLimitRange.value = this.clipLimitRange.dataset.value;
@@ -707,185 +616,22 @@ class FilterPanel extends Panel {
       this.gammaRange.value = this.gammaRange.dataset.value;
       this.clahe();
     };
-    panel.querySelector(".binarizationCReset").onclick = () => {
-      this.binarizationCRange.value = this.binarizationCRange.dataset.value;
-      this.binarization();
-    };
-    panel.querySelector(".brightnessReset").onclick = () => {
-      this.brightnessRange.value = this.brightnessRange.dataset.value;
-      this.brightnessContrast();
-    };
-    panel.querySelector(".contrastReset").onclick = () => {
-      this.contrastRange.value = this.contrastRange.dataset.value;
-      this.brightnessContrast();
-    };
-    panel.querySelector(".hueReset").onclick = () => {
-      this.hueRange.value = this.hueRange.dataset.value;
-      this.hueSaturation();
-    };
-    panel.querySelector(".saturationReset").onclick = () => {
-      this.saturationRange.value = this.saturationRange.dataset.value;
-      this.hueSaturation();
-    };
-    panel.querySelector(".vibranceReset").onclick = () => {
-      this.vibranceRange.value = this.vibranceRange.dataset.value;
-      this.vibrance();
-    };
-    panel.querySelector(".denoiseReset").onclick = () => {
-      this.denoiseRange.value = this.denoiseRange.dataset.value;
-      this.denoise();
-    };
-    panel.querySelector(".unsharpMaskRadiusReset").onclick = () => {
-      this.unsharpMaskRadiusRange.value =
-        this.unsharpMaskRadiusRange.dataset.value;
-      this.unsharpMask();
-    };
-    panel.querySelector(".unsharpMaskStrengthReset").onclick = () => {
-      this.unsharpMaskStrengthRange.value =
-        this.unsharpMaskStrengthRange.dataset.value;
-      this.unsharpMask();
-    };
-    panel.querySelector(".sepiaReset").onclick = () => {
-      this.sepiaRange.value = this.sepiaRange.dataset.value;
-      this.sepia();
-    };
-  }
-
-  drawOffscreenCanvas(image, width, height) {
-    const canvas = this.offscreenCanvas;
-    canvas.width = width;
-    canvas.height = height;
-    this.offscreenCanvasContext.drawImage(
-      image,
-      0,
-      0,
-      width,
-      height,
-    );
-  }
-
-  setAspectRatio(aspectRatio) {
-    const { width, height } = this.canvas;
-    const currAspectRatio = width / height;
-    let tmpWidth, tmpHeight;
-    if (aspectRatio === 0) {
-      tmpWidth = width;
-      tmpHeight = height;
-    } else if (currAspectRatio < aspectRatio) {
-      tmpWidth = height * aspectRatio;
-      tmpHeight = height;
-    } else {
-      tmpWidth = width;
-      tmpHeight = width / aspectRatio;
-    }
-    this.drawOffscreenCanvas(this.canvas, tmpWidth, tmpHeight);
-    this.texture = this.glfxCanvas.texture(this.offscreenCanvas);
-    this.glfxCanvas.draw(this.texture).update();
-  }
-
-  binarization() {
-    const blockSize = Number(this.binarizationBlocksizeRange.value);
-    if (blockSize === Number(this.binarizationBlocksizeRange.min)) {
-      this.glfxCanvas.draw(this.texture).update();
-    } else {
-      const C = Number(this.binarizationCRange.value);
-      const { width, height } = this.glfxCanvas;
-      this.drawOffscreenCanvas(this.canvas, width, height);
-      const src = cv.imread(this.offscreenCanvas);
-      cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
-      cv.adaptiveThreshold(
-        src,
-        src,
-        255,
-        cv.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv.THRESH_BINARY,
-        blockSize * 2 + 1,
-        C,
-      );
-      cv.imshow(this.offscreenCanvas, src);
-      src.delete();
-      const texture = this.glfxCanvas.texture(this.offscreenCanvas);
-      this.glfxCanvas.draw(texture).update();
-    }
-  }
-
-  brightnessContrast() {
-    if (this.filtering) return;
-    this.filtering = true;
-    const brightness = Number(this.brightnessRange.value);
-    const contrast = Number(this.contrastRange.value);
-    this.glfxCanvas.draw(this.texture)
-      .brightnessContrast(brightness, contrast).update();
-    this.filtering = false;
-  }
-
-  hueSaturation() {
-    if (this.filtering) return;
-    this.filtering = true;
-    const hue = Number(this.hueRange.value);
-    const saturation = Number(this.saturationRange.value);
-    this.glfxCanvas.draw(this.texture)
-      .hueSaturation(hue, saturation).update();
-    this.filtering = false;
-  }
-
-  vibrance() {
-    if (this.filtering) return;
-    this.filtering = true;
-    const value = Number(this.vibranceRange.value);
-    this.glfxCanvas.draw(this.texture)
-      .vibrance(value).update();
-    this.filtering = false;
-  }
-
-  denoise() {
-    if (this.filtering) return;
-    this.filtering = true;
-    const value = Number(this.denoiseRange.value);
-    if (value === Number(this.denoiseRange.max)) {
-      this.glfxCanvas.draw(this.texture).update();
-    } else {
-      this.glfxCanvas.draw(this.texture)
-        .denoise(value).update();
-    }
-    this.filtering = false;
-  }
-
-  unsharpMask() {
-    if (this.filtering) return;
-    this.filtering = true;
-    const radius = Number(this.unsharpMaskRadiusRange.value);
-    const strength = Number(this.unsharpMaskStrengthRange.value);
-    this.glfxCanvas.draw(this.texture)
-      .unsharpMask(radius, strength).update();
-    this.filtering = false;
-  }
-
-  sepia() {
-    if (this.filtering) return;
-    this.filtering = true;
-    const value = Number(this.sepiaRange.value);
-    this.glfxCanvas.draw(this.texture)
-      .sepia(value).update();
-    this.filtering = false;
   }
 
   setCanvas(canvas) {
     if (canvas.tagName.toLowerCase() === "img") {
       this.canvas.width = canvas.naturalWidth;
       this.canvas.height = canvas.naturalHeight;
+      this.offscreenCanvas.width = canvas.naturalWidth;
+      this.offscreenCanvas.height = canvas.naturalHeight;
     } else {
       this.canvas.width = canvas.width;
       this.canvas.height = canvas.height;
+      this.offscreenCanvas.width = canvas.width;
+      this.offscreenCanvas.height = canvas.height;
     }
     this.canvasContext.drawImage(canvas, 0, 0);
-
-    this.texture = this.glfxCanvas.texture(this.canvas);
-    this.glfxCanvas.draw(this.texture).update();
-    this.glfxCanvas.setAttribute("class", "w-100 h-100 object-fit-contain");
-    this.canvas.replaceWith(this.glfxCanvas);
-    canvas.setAttribute("class", "w-100 h-100 object-fit-contain");
-    // this.canvas = canvas;
+    this.offscreenCanvasContext.drawImage(canvas, 0, 0);
   }
 
   rotate() {
@@ -913,8 +659,7 @@ class FilterPanel extends Panel {
   }
 
   saveToAlbum() {
-    this.glfxCanvas.update();
-    thumbnailPanel.add(this.glfxCanvas);
+    thumbnailPanel.add(this.canvas);
   }
 }
 
