@@ -35,6 +35,7 @@
     <link rel="alternate" href="https://marmooo.github.io/nocto-camera/ja/" hreflang="ja">
     <link rel="alternate" href="https://marmooo.github.io/nocto-camera/en/" hreflang="en">
     <link class="drop-inline-css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link class="inline-css" href="https://cdn.jsdelivr.net/npm/image-compare-viewer@1.6.2/dist/image-compare-viewer.min.css" rel="stylesheet" crossorigin="anonymous">
     <style>
       .breadcrumb { --bs-breadcrumb-divider: '>'; }
       .panelContainer { display:flex; flex-direction:column; }
@@ -83,40 +84,51 @@
       </noscript>
       <div>
         <div id="loadPanel">
-          <div class="alert alert-warning">
-            <p>A simple night vision camera or image contrast correction app that uses the CLAHE algorithm.
-            </p>
-            <div class="row text-center">
-              <figure class="col figure">
-                <img src="/nocto-camera/img/before.webp" width="800" height="600" class="figure-img img-fluid rounded" alt="Original image before conversion" decoding="async">
-                <figcaption class="figure-caption">Original image before conversion</figcaption>
-              </figure>
-              <figure class="col figure">
-                <img src="/nocto-camera/img/after.webp" width="800" height="600" class="figure-img img-fluid rounded" alt="Converted image with contrast adjusted" decoding="async">
-                <figcaption class="figure-caption">Converted image with contrast adjusted</figcaption>
-              </figure>
+          <h1 class="text-center">A simple night vision camera for free.</h1>
+          <div class="row">
+            <div class="col-md-7 pb-3">
+              <div class="image-compare rounded">
+                <img src="/nocto-camera/img/before.webp" width="600" height="600" class="img-fluid rounded" alt="before" decoding="async">
+                <img src="/nocto-camera/img/after.webp" width="600" height="600" class="img-fluid rounded d-none" alt="after" decoding="async">
+              </div>
             </div>
-            <p class="pt-3">First, specify the image you want to scan.
-              Specifications from the clipboard, file selection, and camera capture are supported.
-            </p>
-            <div class="text-center">
-              <button title="load from clipboard" class="clipboard btn p-0 mx-2" type="button" data-bs-toggle="tooltip">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 14 16" fill="currentColor">
-                  <path fill-rule="evenodd" d="M2 13h4v1H2v-1zm5-6H2v1h5V7zm2 3V8l-3 3 3 3v-2h5v-2H9zM4.5 9H2v1h2.5V9zM2 12h2.5v-1H2v1zm9 1h1v2c-.02.28-.11.52-.3.7-.19.18-.42.28-.7.3H1c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1h3c0-1.11.89-2 2-2 1.11 0 2 .89 2 2h3c.55 0 1 .45 1 1v5h-1V6H1v9h10v-2zM2 5h8c0-.55-.45-1-1-1H8c-.55 0-1-.45-1-1s-.45-1-1-1-1 .45-1 1-.45 1-1 1H3c-.55 0-1 .45-1 1z"></path>
-                </svg>
-              </button>
-              <button title="select from file" class="selectImage btn p-0 mx-2" type="button" data-bs-toggle="tooltip">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/><path d="M15 7l-5-6-5 6h4v8h2V7h4z"/>
-                </svg>
-              </button>
-              <input class="inputImage" type="file" accept="image/*" hidden>
-              <button title="execute camera" class="executeCamera btn p-0 mx-2" type="button" data-bs-toggle="tooltip">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                  <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0"/>
-                </svg>
-              </button>
+            <div class="col-md-5 d-flex flex-column-reverse">
+              <div class="alert alert-info">
+                <dl>
+                  <dt class="fs-5">⚡️ Blazing fast</dt>
+                  <dd>Processed with Wasm + SIMD + Threads.</dd>
+                  <dt class="fs-5">🔒 Secure</dt>
+                  <dd>No data is sent to the server unintentionally.</dd>
+                  <dt class="fs-5">🤖 No Learning</dt>
+                  <dd>Your personal data is not learned.</dd>
+                  <dt class="fs-5">⛔ Rights free</dt>
+                  <dd>No AI, using a simple algorithm.</dd>
+                </dl>
+              </div>
+              <div class="alert alert-light shadow text-center">
+                <div>
+                  <button class="executeCamera btn btn-lg btn-primary rounded-pill">Camera</button>
+                  <button class="selectImage btn btn-lg btn-primary rounded-pill ms-1">Select Image</button>
+                  <input class="inputImage" type="file" accept="image/*" hidden>
+                </div>
+                or drop a file.
+                <div class="pt-3">No image? Try one of these:
+                </div>
+                <div class="examples">
+                  <button class="btn p-0">
+                    <img class="rounded" src="/nocto-camera/img/29749307-64.webp" width="64" height="64" alt="an example of buildings" loading="lazy">
+                  </button>
+                  <button class="btn p-0">
+                    <img class="rounded" src="/nocto-camera/img/30061122-64.webp" width="64" height="64" alt="an example of road" loading="lazy">
+                  </button>
+                  <button class="btn p-0">
+                    <img class="rounded" src="/nocto-camera/img/29704256-64.webp" width="64" height="64" alt="an example of alley" loading="lazy">
+                  </button>
+                  <button class="btn p-0">
+                    <img class="rounded" src="/nocto-camera/img/clahe-64.webp" width="64" height="64" alt="an example of objects" loading="lazy">
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -198,26 +210,6 @@
               <div class="position-relative w-100 h-100">
                 <canvas class="w-100 h-100 object-fit-contain"></canvas>
                 <div class="filterNav bg-dark-subtle opacity-75 p-2">
-                  <div class="form-group d-flex align-items-center">
-                    <div class="filterLabel col-form-label">Filter</div>
-                    <div class="d-flex w-100">
-                      <select class="filterSelect form-select form-selecct-sm w-auto">
-                        <optgroup label="Recommend">
-                          <option value="clahe">CLAHE</option>
-                          <option value="aspectRatio">Aspect Ratio</option>
-                          <option value="binarization">Binarization</option>
-                        </optgroup>
-                        <optgroup label="Adjust">
-                          <option value="brightnessContrast">Brightness / Contrast</option>
-                          <option value="hueSaturation">Hue / Saturation</option>
-                          <option value="vibrance">Vibrance</option>
-                          <option value="denoise">Denoise</option>
-                          <option value="unsharpMask">Unsharp Mask</option>
-                          <option value="sepia">Sepia</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                  </div>
                   <div class="clahe">
                     <div class="form-group d-flex align-items-center">
                       <div class="filterLabel col-form-label">Clip limit</div>
@@ -293,97 +285,6 @@
                           </label>
                         </div>
                         <input class="aspectRatioValue form-control form-control-sm" name="ratioValue" type="number" placeholder="1.234" min="0" step="0.1">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="binarization d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Block size</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="binarizationBlocksizeRange form-range" min="0" max="100" step="1" value="0" data-value="0">
-                        <button title="reset" class="binarizationBlocksizeReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">C</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="binarizationCRange form-range" min="0" max="100" step="1" value="10" data-value="10">
-                        <button title="reset" class="binarizationCReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="brightnessContrast d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Brightness</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="brightnessRange form-range" min="-1" max="1" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="brightnessReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Contrast</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="contrastRange form-range" min="-1" max="1" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="contrastReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="hueSaturation d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Hue</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="hueRange form-range" min="-1" max="1" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="hueReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Saturation</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="saturationRange form-range" min="-1" max="1" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="saturationReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="vibrance d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Vibrance</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="vibranceRange form-range" min="-1" max="1" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="vibranceReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="denoise d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Exponent</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="denoiseRange form-range" min="0" max="51" step="1" value="51" data-value="51">
-                        <button title="reset" class="denoiseReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="unsharpMask d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Radius</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="unsharpMaskRadiusRange form-range" min="0" max="200" step="1" value="0" data-value="0">
-                        <button title="reset" class="unsharpMaskRadiusReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Strength</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="unsharpMaskStrengthRange form-range" min="0" max="5" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="unsharpMaskStrengthReset btn p-0" type="button">↩️</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="sepia d-none">
-                    <div class="form-group d-flex align-items-center">
-                      <div class="filterLabel col-form-label">Amount</div>
-                      <div class="d-flex w-100">
-                        <input type="range" class="sepiaRange form-range" min="0" max="1" step="0.01" value="0" data-value="0">
-                        <button title="reset" class="sepiaReset btn p-0" type="button">↩️</button>
                       </div>
                     </div>
                   </div>

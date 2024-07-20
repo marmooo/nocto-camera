@@ -1,4 +1,4 @@
-const CACHE_NAME = "2024-07-03 01:10";
+const CACHE_NAME = "2024-07-20 21:30";
 const urlsToCache = [
   "/nocto-camera/",
   "/nocto-camera/en/",
@@ -6,6 +6,10 @@ const urlsToCache = [
   "/nocto-camera/index.js",
   "/nocto-camera/img/before.webp",
   "/nocto-camera/img/after.webp",
+  "/nocto-camera/img/29749307-64.webp",
+  "/nocto-camera/img/30061122-64.webp",
+  "/nocto-camera/img/29704256-64.webp",
+  "/nocto-camera/img/clahe-64.webp",
   "/nocto-camera/img/loading.gif",
   "/nocto-camera/camera.mp3",
   "/nocto-camera/favicon/favicon.svg",
