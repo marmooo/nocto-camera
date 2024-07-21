@@ -1,4 +1,4 @@
-# Photo Scanner
+# Nocto Camera
 
 [A simple night vision camera or image contrast correction app that uses the CLAHE algorithm](https://marmooo.github.io/nocto-camera/).
 
