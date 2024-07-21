@@ -45,19 +45,18 @@ function initTooltip() {
 }
 
 async function getOpenCVPath() {
-  // const simdSupport = await wasmFeatureDetect.simd();
-  // const threadsSupport = self.crossOriginIsolated &&
-  //   await wasmFeatureDetect.threads();
-  // if (simdSupport && threadsSupport) {
-  //   return "/nocto-camera/opencv/threaded-simd/opencv_js.js";
-  // } else if (simdSupport) {
-  //   return "/nocto-camera/opencv/simd/opencv_js.js";
-  // } else if (threadsSupport) {
-  //   return "/nocto-camera/opencv/threads/opencv_js.js";
-  // } else {
-  //   return "/nocto-camera/opencv/wasm/opencv_js.js";
-  // }
-  return "/nocto-camera/opencv/wasm/opencv_js.js";
+  const simdSupport = await wasmFeatureDetect.simd();
+  const threadsSupport = self.crossOriginIsolated &&
+    await wasmFeatureDetect.threads();
+  if (simdSupport && threadsSupport) {
+    return "/nocto-camera/opencv/threaded-simd/opencv_js.js";
+  } else if (simdSupport) {
+    return "/nocto-camera/opencv/simd/opencv_js.js";
+  } else if (threadsSupport) {
+    return "/nocto-camera/opencv/threads/opencv_js.js";
+  } else {
+    return "/nocto-camera/opencv/wasm/opencv_js.js";
+  }
 }
 
 function loadScript(url) {
