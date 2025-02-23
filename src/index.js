@@ -132,6 +132,7 @@ class LoadPanel extends Panel {
 
     for (const node of document.querySelectorAll(".image-compare")) {
       const images = node.querySelectorAll("img");
+      images[0].classList.remove("w-100");
       new imageCompareViewer(node, { addCircle: true }).mount();
       images[1].classList.remove("d-none");
     }
