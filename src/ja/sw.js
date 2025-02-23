@@ -1,4 +1,4 @@
-const CACHE_NAME = "2024-07-21 20:20";
+const CACHE_NAME = "2025-02-23 20:00";
 const urlsToCache = [
   "/nocto-camera/",
   "/nocto-camera/ja/",
@@ -13,11 +13,11 @@ const urlsToCache = [
   "/nocto-camera/img/loading.gif",
   "/nocto-camera/camera.mp3",
   "/nocto-camera/favicon/favicon.svg",
-  "https://cdn.jsdelivr.net/npm/wasm-feature-detect@1.6.1/dist/umd/index.min.js",
+  "https://cdn.jsdelivr.net/npm/wasm-feature-detect@1.8.0/dist/umd/index.min.js",
 ];
 
 importScripts(
-  "https://cdn.jsdelivr.net/npm/wasm-feature-detect@1.6.1/dist/umd/index.min.js",
+  "https://cdn.jsdelivr.net/npm/wasm-feature-detect@1.8.0/dist/umd/index.min.js",
 );
 
 async function getOpenCVPath() {
