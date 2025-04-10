@@ -1,0 +1,14 @@
+{
+  "core": {
+    "whitelist": {
+      "": ["merge", "split", "LUT"],
+      "Algorithm": []
+    }
+  },
+  "imgproc": {
+    "whitelist": {
+      "": ["createCLAHE", "cvtColor", "equalizeHist"],
+      "CLAHE": ["apply"]
+    }
+  }
+}
