@@ -230,7 +230,6 @@ class CameraPanel extends Panel {
 
   constructor(panel) {
     super(panel);
-    this.panelContainer = panel.querySelector(".panelContainer");
     const video = document.createElement("video");
     video.addEventListener("play", () => {
       this.loadingMessage.classList.add("d-none");
@@ -339,7 +338,7 @@ class CameraPanel extends Panel {
 
   show() {
     super.show();
-    this.panelContainer.scrollIntoView({ behavior: "instant" });
+    this.panel.scrollIntoView({ behavior: "instant" });
   }
 
   hideResolutionPopover() {
@@ -510,7 +509,6 @@ class ThumbnailPanel extends Panel {
 class FilterPanel extends Panel {
   constructor(panel) {
     super(panel);
-    this.panelContainer = panel.querySelector(".panelContainer");
     this.canvas = panel.querySelector("canvas");
     this.canvasContext = this.canvas.getContext("2d", {
       willReadFrequently: true,
@@ -530,7 +528,7 @@ class FilterPanel extends Panel {
 
   show() {
     super.show();
-    this.panelContainer.scrollIntoView({ behavior: "instant" });
+    this.panel.scrollIntoView({ behavior: "instant" });
   }
 
   moveLoadPanel() {
