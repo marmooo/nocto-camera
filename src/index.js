@@ -470,9 +470,6 @@ class ThumbnailPanel extends Panel {
     this.gallery = panel.querySelector(".gallery");
     panel.querySelector(".deleteAll").onclick = () => this.deleteAll();
     panel.querySelector(".download").onclick = () => this.download();
-    panel.querySelector(".uploadServer").onclick = () => {
-      configPanel.uploadServer();
-    };
     panel.querySelector(".showConfig").onclick = () => {
       configPanel.offcanvas.show();
     };
@@ -662,37 +659,39 @@ class ConfigPanel extends Panel {
   constructor(panel) {
     super(panel);
     this.offcanvas = new Offcanvas(panel);
-    this.resolution = panel.querySelector(".resolution");
     this.serverAddress = panel.querySelector(".serverAddress");
     this.serverAddress.value = localStorage.getItem("serverAddress");
     this.serverAddress.onchange = (event) => {
       localStorage.setItem("serverAddress", event.currentTarget.value);
+    };
+    panel.querySelector(".uploadServer").onclick = () => {
+      this.uploadServer();
     };
     panel.querySelector(".clearConfig").onclick = (event) =>
       this.clearConfig(event);
   }
 
   uploadServer() {
-    if (this.serverAddress.value != "") {
-      const formData = new FormData();
-      const gallery = thumbnailPanel.gallery;
-      for (let i = 0; i < gallery.children.length; i++) {
-        let base64 = gallery.children[i].shadowRoot.querySelector("img").src;
-        base64 = base64.slice(base64.indexOf("base64,") + 7);
-        formData.append("files", this.base64toJpg(base64), i + ".jpg");
-      }
-      fetch(this.serverAddress.value, {
-        method: "POST",
-        body: formData,
-        mode: "no-cors",
-      }).then(() => {
-      }).catch((err) => {
-        console.log(err);
-        alert(err);
-      });
-    } else {
-      this.offcanvas.show();
+    if (!this.serverAddress.checkValidity()) {
+      this.serverAddress.reportValidity();
+      return;
     }
+    const formData = new FormData();
+    const gallery = thumbnailPanel.gallery;
+    for (let i = 0; i < gallery.children.length; i++) {
+      let base64 = gallery.children[i].shadowRoot.querySelector("img").src;
+      base64 = base64.slice(base64.indexOf("base64,") + 7);
+      formData.append("files", this.base64toJpg(base64), i + ".jpg");
+    }
+    fetch(this.serverAddress.value, {
+      method: "POST",
+      body: formData,
+      mode: "no-cors",
+    }).then(() => {
+    }).catch((err) => {
+      console.log(err);
+      alert(err);
+    });
   }
 
   base64toJpg(base64) {
