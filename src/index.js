@@ -135,12 +135,6 @@ class LoadPanel extends Panel {
       new imageCompareViewer(node, { addCircle: true }).mount();
       images[1].classList.remove("d-none");
     }
-    const clipboardButton = panel.querySelector(".clipboard");
-    if (clipboardButton) {
-      clipboardButton.onclick = (event) => {
-        this.loadClipboardImage(event);
-      };
-    }
     panel.querySelector(".selectImage").onclick = () => {
       panel.querySelector(".inputImage").click();
     };
@@ -469,7 +463,7 @@ class ThumbnailPanel extends Panel {
     super(panel);
     this.gallery = panel.querySelector(".gallery");
     panel.querySelector(".deleteAll").onclick = () => this.deleteAll();
-    panel.querySelector(".download").onclick = () => this.download();
+    panel.querySelector(".downloadAll").onclick = () => this.downloadAll();
     panel.querySelector(".showConfig").onclick = () => {
       configPanel.offcanvas.show();
     };
@@ -490,11 +484,11 @@ class ThumbnailPanel extends Panel {
     }
   }
 
-  download() {
+  downloadAll() {
     const gallery = this.gallery;
     for (let i = 0; i < gallery.children.length; i++) {
       const a = document.createElement("a");
-      a.download = i + ".jpg";
+      a.download = i + ".png";
       a.href = gallery.children[i].shadowRoot.querySelector("img").src;
       gallery.appendChild(a);
       a.click();
@@ -503,9 +497,28 @@ class ThumbnailPanel extends Panel {
   }
 }
 
-class FilterPanel extends Panel {
+class FilterPanel extends LoadPanel {
   constructor(panel) {
     super(panel);
+    panel.querySelector(".saveClipboard").onclick = async () => {
+      const svgs = event.currentTarget.children;
+      svgs[0].classList.add("d-none");
+      svgs[1].classList.remove("d-none");
+      const blob = await new Promise((resolve) =>
+        this.canvas.toBlob(resolve, "image/png")
+      );
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+      setTimeout(() => {
+        svgs[0].classList.remove("d-none");
+        svgs[1].classList.add("d-none");
+      }, 2000);
+    };
+    panel.querySelector(".loadClipboard").onclick = (event) => {
+      this.loadClipboardImage(event);
+    };
+
     this.canvas = panel.querySelector("canvas");
     this.canvasContext = this.canvas.getContext("2d", {
       willReadFrequently: true,
@@ -517,6 +530,7 @@ class FilterPanel extends Panel {
     this.canvasContainer = this.canvas.parentNode;
 
     panel.querySelector(".moveTop").onclick = () => this.moveLoadPanel();
+    panel.querySelector(".download").onclick = () => this.download();
     panel.querySelector(".executeCamera").onclick = () => this.executeCamera();
     panel.querySelector(".rotate").onclick = () => this.rotate();
     panel.querySelector(".saveToAlbum").onclick = () => this.saveToAlbum();
@@ -531,6 +545,19 @@ class FilterPanel extends Panel {
   moveLoadPanel() {
     this.hide();
     loadPanel.show();
+  }
+
+  download() {
+    this.canvas.toBlob((blob) => {
+      const a = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = "nocto.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, "image/png");
   }
 
   executeCamera() {
