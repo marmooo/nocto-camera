@@ -69,6 +69,10 @@ function loadScript(url) {
   });
 }
 
+async function toBlob(canvas, type, quality) {
+  return await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+}
+
 class ImageBox extends HTMLElement {
   constructor() {
     super();
@@ -500,15 +504,12 @@ class ThumbnailPanel extends Panel {
 class FilterPanel extends LoadPanel {
   constructor(panel) {
     super(panel);
-    panel.querySelector(".saveClipboard").onclick = async () => {
+    panel.querySelector(".saveClipboard").onclick = async (event) => {
       const svgs = event.currentTarget.children;
       svgs[0].classList.add("d-none");
       svgs[1].classList.remove("d-none");
-      const blob = await new Promise((resolve) =>
-        this.canvas.toBlob(resolve, "image/png")
-      );
       await navigator.clipboard.write([
-        new ClipboardItem({ "image/png": blob }),
+        new ClipboardItem({ "image/png": toBlob(this.canvas) }),
       ]);
       setTimeout(() => {
         svgs[0].classList.remove("d-none");
