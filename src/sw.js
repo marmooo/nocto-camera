@@ -1,4 +1,4 @@
-const cacheName = "2026-01-08 00:00";
+const cacheName = "2026-05-24 00:00";
 const urlsToCache = [
   "/nocto-camera/coi-serviceworker.js",
   "/nocto-camera/index.js",
