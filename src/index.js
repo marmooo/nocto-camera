@@ -62,6 +62,17 @@ function loadScript(url) {
   });
 }
 
+function isOpenCVReady() {
+  return typeof globalThis.cv?.imread === "function";
+}
+
+async function initOpenCV() {
+  await loadScript(await getOpenCVPath());
+  // opencv_js.js is built with MODULARIZE: `cv` stays a factory function
+  // until the WebAssembly runtime is ready.
+  globalThis.cv = typeof cv === "function" ? await cv() : await cv;
+}
+
 async function toBlob(canvas, type, quality) {
   return await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
 }
@@ -274,8 +285,8 @@ class CameraPanel extends Panel {
     this.gammaRange = panel.querySelector(".gammaRange");
     this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
 
-    this.gammaRange.oninput = () => this.setLUT();
-    this.gammaRange.onchange = () => this.setLUT();
+    this.gammaRange.oninput = () => this.updateLUT();
+    this.gammaRange.onchange = () => this.updateLUT();
 
     panel.querySelector(".clipLimitReset").onclick = () => {
       this.clipLimitRange.value = this.clipLimitRange.dataset.value;
@@ -296,6 +307,15 @@ class CameraPanel extends Panel {
       gammaArray[i] = (i / 255) ** gammaValue * 255;
     }
     this.lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
+  }
+
+  async updateLUT() {
+    try {
+      await cvReady;
+      this.setLUT();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   clahe() {
@@ -441,7 +461,12 @@ class CameraPanel extends Panel {
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         // this.canvasContext.drawImage(video, 0, 0);
         this.offscreenCanvasContext.drawImage(video, 0, 0);
-        this.clahe();
+        if (isOpenCVReady()) {
+          this.clahe();
+        } else {
+          // show the raw camera frame until OpenCV is ready
+          this.canvasContext.drawImage(this.offscreenCanvas, 0, 0);
+        }
       }
     }
     this.animationFrame = requestAnimationFrame(this.tickVideo);
@@ -570,6 +595,16 @@ class FilterPanel extends LoadPanel {
     this.lut = cv.matFromArray(1, 256, cv.CV_8U, gammaArray);
   }
 
+  async applyClahe(updateLUT = false) {
+    try {
+      await cvReady;
+      if (updateLUT) this.setLUT();
+      this.clahe();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   clahe() {
     const clipLimit = Number(this.clipLimitRange.value);
     const tileGridSize = Number(this.tileGridSizeRange.value);
@@ -605,31 +640,25 @@ class FilterPanel extends LoadPanel {
     this.tileGridSizeRange = panel.querySelector(".tileGridSizeRange");
     this.gammaRange = panel.querySelector(".gammaRange");
     this.equalizedHistSwitch = panel.querySelector(".equalizedHistSwitch");
-    this.clipLimitRange.oninput = () => this.clahe();
-    this.clipLimitRange.onchange = () => this.clahe();
-    this.tileGridSizeRange.oninput = () => this.clahe();
-    this.tileGridSizeRange.onchange = () => this.clahe();
-    this.gammaRange.oninput = () => {
-      this.setLUT();
-      this.clahe();
-    };
-    this.gammaRange.onchange = () => {
-      this.setLUT();
-      this.clahe();
-    };
-    this.equalizedHistSwitch.onchange = () => this.clahe();
+    this.clipLimitRange.oninput = () => this.applyClahe();
+    this.clipLimitRange.onchange = () => this.applyClahe();
+    this.tileGridSizeRange.oninput = () => this.applyClahe();
+    this.tileGridSizeRange.onchange = () => this.applyClahe();
+    this.gammaRange.oninput = () => this.applyClahe(true);
+    this.gammaRange.onchange = () => this.applyClahe(true);
+    this.equalizedHistSwitch.onchange = () => this.applyClahe();
 
     panel.querySelector(".clipLimitReset").onclick = () => {
       this.clipLimitRange.value = this.clipLimitRange.dataset.value;
-      this.clahe();
+      this.applyClahe();
     };
     panel.querySelector(".tileGridSizeReset").onclick = () => {
       this.tileGridSizeRange.value = this.tileGridSizeRange.dataset.value;
-      this.clahe();
+      this.applyClahe();
     };
     panel.querySelector(".gammaReset").onclick = () => {
       this.gammaRange.value = this.gammaRange.dataset.value;
-      this.clahe();
+      this.applyClahe();
     };
   }
 
@@ -736,8 +765,7 @@ class ConfigPanel extends Panel {
 
 initLangSelect();
 initTooltip();
-await loadScript(await getOpenCVPath());
-cv = await cv();
+const cvReady = initOpenCV();
 
 const configPanel = new ConfigPanel(document.getElementById("configPanel"));
 const thumbnailPanel = new ThumbnailPanel(
